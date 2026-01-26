@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "aaron-bond.better-comments",
+    "usernamehw.errorlens",
+    "vadimcn.vscode-lldb",
+    "tamasfe.even-better-toml",
+    "github.copilot-chat",
+    "github.copilot",
+    "christian-kohler.path-intellisense",
+    "rust-lang.rust-analyzer",
+    "redhat.vscode-yaml"
+  ]
+}
