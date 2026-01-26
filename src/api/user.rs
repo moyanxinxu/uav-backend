@@ -1,13 +1,14 @@
+use axum::extract::{Json, Path, Query, State};
 use axum::Router;
-use axum::extract::{Json, Path, State};
 
 use axum::routing::{delete, get, post};
-use sea_orm::QuerySelect;
+use sea_orm::{QuerySelect};
 
 use serde::{Deserialize, Serialize};
 
 use crate::app::AppState;
 
+use crate::common::page::{Page, PaginationParams};
 use crate::common::response::ApiResponse;
 use crate::common::result::{ApiError, ApiResult};
 use crate::entity::prelude::Users;
@@ -32,6 +33,13 @@ pub struct UserUpdateRequest {
     role: Role,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserQuery {
+    #[serde(flatten)]
+    pagination: PaginationParams,
+}
+
 #[derive(Debug, Serialize, FromQueryResult)]
 pub struct UserResponse {
     id: String,
@@ -41,18 +49,23 @@ pub struct UserResponse {
 
 async fn get_all_users(
     State(AppState { db }): State<AppState>,
-) -> ApiResult<ApiResponse<Vec<UserResponse>>> {
-    let users = Users::find()
+    Query(UserQuery { pagination }): Query<UserQuery>,
+) -> ApiResult<ApiResponse<Page<UserResponse>>> {
+    let paginator = Users::find()
         .select_only()
         .column(users::Column::Id)
         .column(users::Column::Name)
         .column(users::Column::Role)
+        // .order_by_desc(users::Column::CreatedAt)
         .into_model::<UserResponse>()
-        .all(&db)
-        .await
-        .unwrap();
+        .paginate(&db, pagination.size);
 
-    Ok(ApiResponse::ok("ok", Some(users)))
+    let total = paginator.num_items().await?;
+    let users = paginator.fetch_page(pagination.page - 1).await?;
+
+    let page = Page::from_pagination(pagination, total, users);
+
+    Ok(ApiResponse::ok("ok", Some(page)))
 }
 
 async fn add_user(

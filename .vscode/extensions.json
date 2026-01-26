@@ -8,6 +8,10 @@
     "github.copilot",
     "christian-kohler.path-intellisense",
     "rust-lang.rust-analyzer",
-    "redhat.vscode-yaml"
+    "redhat.vscode-yaml",
+    "visualstudioexptteam.vscodeintellicode",
+    "visualstudioexptteam.intellicode-api-usage-examples",
+    "visualstudioexptteam.vscodeintellicode-completions",
+    "esbenp.prettier-vscode"
   ]
 }

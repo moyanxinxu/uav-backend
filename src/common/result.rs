@@ -9,9 +9,11 @@ pub type ApiResult<T> = Result<T, ApiError>;
 pub enum ApiError {
     #[error("Not Found")]
     NotFound,
+    #[error("数据库异常: {0}")]
+    Database(#[from] sea_orm::DbErr),
     #[error("{0}")]
     Biz(String),
-    #[error("Error: {0}")]
+    #[error("错误: {0}")]
     Internal(#[from] anyhow::Error),
 }
 
@@ -20,7 +22,7 @@ impl ApiError {
         match self {
             ApiError::NotFound => StatusCode::NOT_FOUND,
             ApiError::Biz(_) => StatusCode::OK,
-            ApiError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            ApiError::Internal(_) | ApiError::Database(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

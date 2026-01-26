@@ -1,5 +1,6 @@
 pub mod response;
 pub mod result;
+pub mod page;
 
 mod server;
 use server::ServerConfig;
