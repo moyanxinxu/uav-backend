@@ -1,0 +1,20 @@
+CREATE DATABASE IF NOT EXISTS uav
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_general_ci;
+
+USE uav;
+
+CREATE TABLE IF NOT EXISTS users (
+    id VARCHAR(32)  NOT NULL PRIMARY KEY COMMENT '用户ID',
+    name VARCHAR(50) NOT NULL COMMENT '用户名',
+    password VARCHAR(255) NOT NULL COMMENT '密码哈希值',
+    role ENUM('superadmin','admin','user') NOT NULL COMMENT '用户角色',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP COMMENT '最近更新时间',
+    UNIQUE KEY uk_name (name)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci
+COMMENT='用户表';

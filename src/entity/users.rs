@@ -12,7 +12,7 @@ pub struct Model {
     pub id: String,
     #[sea_orm(unique)]
     pub name: String,
-    pub password_hash: String,
+    pub password: String,
     pub role: Role,
     pub created_at: Option<DateTime>,
     pub updated_at: Option<DateTime>,

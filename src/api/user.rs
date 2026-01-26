@@ -21,7 +21,7 @@ use sea_orm::{ActiveValue, FromQueryResult, IntoActiveModel};
 #[derive(Deserialize)]
 pub struct UserCreateRequest {
     name: String,
-    password_hash: String,
+    password: String,
     role: Role,
 }
 
@@ -62,7 +62,7 @@ async fn add_user(
     let user = UsersActiveModel {
         id: ActiveValue::set(xid::new().to_string()),
         name: ActiveValue::set(data.name),
-        password_hash: ActiveValue::set(data.password_hash),
+        password: ActiveValue::set(data.password),
         role: ActiveValue::set(data.role),
         ..Default::default()
     };
