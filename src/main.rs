@@ -11,7 +11,7 @@ use tokio::net::TcpListener;
 #[tokio::main]
 async fn main() {
     // let db = Database::connect("mysql://moyanxinxu:moyanxinxu@database:3306/uav")
-    let db = Database::connect("sqlite://scipts/uav.db")
+    let db = Database::connect("sqlite://scripts/uav.db")
         .await
         .unwrap();
 
