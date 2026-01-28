@@ -1,12 +1,18 @@
 mod user;
+mod drone;
+mod mission;
+mod logs;
 
+use crate::api::drone::create_drone_router;
+use crate::api::logs::create_logs_router;
+use crate::api::mission::create_mission_router;
 use crate::api::user::create_user_router;
 use crate::app::AppState;
-use crate::common::result::{ApiError, ApiResult};
+use crate::common::result::{ ApiError, ApiResult };
 use axum::Router;
 
 use axum::http::Method;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::{ Any, CorsLayer };
 
 pub fn create_overall_router() -> Router<AppState> {
     let cors = CorsLayer::new()
@@ -18,7 +24,10 @@ pub fn create_overall_router() -> Router<AppState> {
         "/api",
         Router::new()
             .nest("/users", create_user_router())
+            .nest("/drones", create_drone_router())
+            .nest("/missions", create_mission_router())
+            .nest("/logs", create_logs_router())
             .fallback(async || -> ApiResult<()> { Err(ApiError::NotFound) })
-            .layer(cors),
+            .layer(cors)
     )
 }

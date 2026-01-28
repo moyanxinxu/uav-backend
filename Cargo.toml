@@ -50,3 +50,4 @@ rust-embed = { version = "8.7.2", features = [
     "interpolate-folder-path",
     "mime-guess",
 ] }
+rust_decimal = "1.40.0"

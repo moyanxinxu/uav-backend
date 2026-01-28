@@ -2,7 +2,7 @@
 target/
 
 # Cargo 的锁文件 (通常不提交，除非是可执行文件/应用)
-# Cargo.lock
+Cargo.lock
 
 # IDE 配置
 .idea/
