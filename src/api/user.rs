@@ -192,6 +192,30 @@ async fn update_user(
         Err(ApiError::Biz("未找到该用户".to_string()))
     }
 }
+#[derive(Debug, Serialize, FromQueryResult)]
+struct UserCategoryItem {
+    role: String,
+    count: i64,
+}
+
+#[derive(Debug, Serialize)]
+struct UserCategoryResponse {
+    categories: Vec<UserCategoryItem>,
+}
+
+async fn get_user_category(State(
+    AppState { db },
+): State<AppState>) -> ApiResult<ApiResponse<UserCategoryResponse>> {
+    let result = Users::find()
+        .select_only()
+        .column(users::Column::Role)
+        .column_as(Expr::col(users::Column::UserId).count(), "count")
+        .group_by(users::Column::Role)
+        .into_model::<UserCategoryItem>()
+        .all(&db).await?;
+
+    Ok(ApiResponse::ok("获取用户分布成功", Some(UserCategoryResponse { categories: result })))
+}
 
 pub fn create_user_router() -> Router<AppState> {
     Router::new()
@@ -200,4 +224,5 @@ pub fn create_user_router() -> Router<AppState> {
         .route("/{id}", get(get_user))
         .route("/{id}", put(update_user))
         .route("/{id}", delete(delete_user))
+        .route("/category", get(get_user_category))
 }
