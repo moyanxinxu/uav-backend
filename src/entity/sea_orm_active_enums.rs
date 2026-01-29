@@ -4,6 +4,22 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "event_type")]
+pub enum EventType {
+    #[sea_orm(string_value = "takeoff")]
+    Takeoff,
+    #[sea_orm(string_value = "landing")]
+    Landing,
+    #[sea_orm(string_value = "battery_low")]
+    BatteryLow,
+    #[sea_orm(string_value = "obstacle_detected")]
+    ObstacleDetected,
+    #[sea_orm(string_value = "return")]
+    Return,
+    #[sea_orm(string_value = "error")]
+    Error,
+}
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "log_type")]
 pub enum LogType {
     #[sea_orm(string_value = "INFO")]

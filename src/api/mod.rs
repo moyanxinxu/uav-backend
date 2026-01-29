@@ -2,8 +2,10 @@ mod user;
 mod drone;
 mod mission;
 mod logs;
+mod events;
 
 use crate::api::drone::create_drone_router;
+use crate::api::events::create_event_router;
 use crate::api::logs::create_logs_router;
 use crate::api::mission::create_mission_router;
 use crate::api::user::create_user_router;
@@ -27,6 +29,7 @@ pub fn create_overall_router() -> Router<AppState> {
             .nest("/drones", create_drone_router())
             .nest("/missions", create_mission_router())
             .nest("/logs", create_logs_router())
+            .nest("/events", create_event_router())
             .fallback(async || -> ApiResult<()> { Err(ApiError::NotFound) })
             .layer(cors)
     )

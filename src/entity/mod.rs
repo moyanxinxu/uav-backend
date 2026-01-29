@@ -3,6 +3,7 @@
 pub mod prelude;
 
 pub mod drones;
+pub mod events;
 pub mod logs;
 pub mod missions;
 pub mod sea_orm_active_enums;

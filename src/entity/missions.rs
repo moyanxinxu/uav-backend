@@ -11,6 +11,7 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub mission_id: String,
     pub user_id: String,
+    pub drone_id: String,
     #[sea_orm(column_type = "Decimal(Some((9, 6)))", nullable)]
     pub target_lat: Option<Decimal>,
     #[sea_orm(column_type = "Decimal(Some((9, 6)))", nullable)]
@@ -24,6 +25,16 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
+        belongs_to = "super::drones::Entity",
+        from = "Column::DroneId",
+        to = "super::drones::Column::DroneId",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Drones,
+    #[sea_orm(has_many = "super::events::Entity")]
+    Events,
+    #[sea_orm(
         belongs_to = "super::users::Entity",
         from = "Column::UserId",
         to = "super::users::Column::UserId",
@@ -31,6 +42,18 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Users,
+}
+
+impl Related<super::drones::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Drones.def()
+    }
+}
+
+impl Related<super::events::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Events.def()
+    }
 }
 
 impl Related<super::users::Entity> for Entity {

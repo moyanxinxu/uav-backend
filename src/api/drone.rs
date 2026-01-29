@@ -3,11 +3,13 @@ use axum::Router;
 use axum::routing::{ delete, get, post, put };
 use sea_orm::{
     ActiveModelTrait,
+    ActiveValue,
+    ColumnTrait,
     EntityTrait,
     IntoActiveModel,
     ModelTrait,
     PaginatorTrait,
-    ActiveValue,
+    QueryFilter,
 };
 
 use crate::app::AppState;
@@ -49,6 +51,22 @@ async fn get_all_drones(
     Ok(ApiResponse::ok("ok", Some(page)))
 }
 
+async fn get_all_available_drones(
+    State(AppState { db }): State<AppState>,
+    Query(DroneQuery { pagination }): Query<DroneQuery>
+) -> ApiResult<ApiResponse<Page<drones::Model>>> {
+    let paginator = Drones::find()
+        .filter(drones::Column::Activate.eq(true))
+        .paginate(&db, pagination.size);
+
+    let total = paginator.num_items().await?;
+    let drones = paginator.fetch_page(pagination.page - 1).await?;
+
+    let page = Page::from_pagination(pagination, total, drones);
+
+    Ok(ApiResponse::ok("获取所有可用无人机成功", Some(page)))
+}
+
 async fn get_drone(
     State(AppState { db }): State<AppState>,
     Path(id): Path<String>
@@ -87,7 +105,7 @@ async fn add_drone(
 
     drone.insert(&db).await.unwrap();
 
-    Ok(ApiResponse::ok("Created drone successfully", None))
+    Ok(ApiResponse::ok("无人机信息添加成功", None))
 }
 
 // 修改用户时的请求体
@@ -101,6 +119,8 @@ struct DroneUpdateRequest {
     status: Option<Status>,
     #[serde(skip_serializing_if = "Option::is_none")]
     battery: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    activate: Option<i8>,
 }
 
 impl DroneUpdateRequest {
@@ -117,6 +137,9 @@ impl DroneUpdateRequest {
         if let Some(ref battery) = self.battery {
             drone.battery = ActiveValue::set(*battery);
         }
+        if let Some(ref activate) = self.activate {
+            drone.activate = ActiveValue::set(*activate);
+        }
     }
 }
 
@@ -132,9 +155,9 @@ async fn update_drone(
         data.apply_to(&mut drone);
 
         drone.update(&db).await.unwrap();
-        Ok(ApiResponse::ok("Updated drone successfully", None))
+        Ok(ApiResponse::ok("更新无人机成功", None))
     } else {
-        Err(ApiError::Biz("Drone not found".to_string()))
+        Err(ApiError::Biz("无人机未找到".to_string()))
     }
 }
 
@@ -146,9 +169,9 @@ async fn delete_drone(
 
     if let Some(drone) = drone {
         drone.delete(&db).await.unwrap();
-        Ok(ApiResponse::ok("Deleted drone successfully", None))
+        Ok(ApiResponse::ok("删除无人机成功", None))
     } else {
-        Err(ApiError::Biz("Drone not found".to_string()))
+        Err(ApiError::Biz("无人机未找到".to_string()))
     }
 }
 
@@ -159,4 +182,5 @@ pub fn create_drone_router() -> Router<AppState> {
         .route("/{id}", get(get_drone))
         .route("/{id}", put(update_drone))
         .route("/{id}", delete(delete_drone))
+        .route("/available", get(get_all_available_drones))
 }

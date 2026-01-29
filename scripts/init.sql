@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS drones (
     -- last_known_lat DECIMAL(9,6) DEFAULT NULL COMMENT '最后纬度，精度约0.1米',
     -- last_known_lng DECIMAL(9,6) DEFAULT NULL COMMENT '最后经度，精度约0.1米',
     battery TINYINT UNSIGNED NOT NULL COMMENT '电量百分比，0-100',
+    activate BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否激活',
     -- created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (drone_id)
 )
@@ -42,6 +43,7 @@ COMMENT='无人机表';
 CREATE TABLE IF NOT EXISTS missions (
     mission_id VARCHAR(32) NOT NULL COMMENT '任务ID，主键',
     user_id VARCHAR(32) NOT NULL COMMENT '任务发起用户ID',
+    drone_id VARCHAR(32) NOT NULL COMMENT '执行任务的无人机ID',
     target_lat DECIMAL(9,6) COMMENT '目标纬度',
     target_lng DECIMAL(9,6) COMMENT '目标经度',
     status ENUM('idle', 'working', 'returning', 'completed', 'error')
@@ -51,12 +53,29 @@ CREATE TABLE IF NOT EXISTS missions (
     completed_at DATETIME COMMENT '任务完成时间',
 
     PRIMARY KEY (mission_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (drone_id) REFERENCES drones(drone_id)
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_general_ci
-COMMENT='无人机表';
+COMMENT='任务表';
+
+
+CREATE TABLE IF NOT EXISTS events (
+    event_id VARCHAR(32) NOT NULL COMMENT '事件ID，主键',
+    mission_id VARCHAR(32) NOT NULL COMMENT '任务ID，外键',
+    event_type ENUM('takeoff','landing','battery_low','obstacle_detected','return','error') NOT NULL COMMENT '事件类型',
+    message TEXT COMMENT '事件描述',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+
+    PRIMARY KEY (event_id),
+    FOREIGN KEY (mission_id) REFERENCES missions(mission_id)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci
+COMMENT="事件表";
 
 -- 任务日志表
 CREATE TABLE IF NOT EXISTS logs (

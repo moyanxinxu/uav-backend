@@ -91,7 +91,7 @@ async fn get_mission(
     if let Some(mission) = mission {
         Ok(ApiResponse::ok("ok", Some(mission)))
     } else {
-        let msg = format!("Mission id {} not found", id);
+        let msg = format!("任务ID<{}>未找到", id);
         Err(ApiError::Biz(msg))
     }
 }
@@ -99,6 +99,7 @@ async fn get_mission(
 #[derive(Debug, Serialize, Deserialize)]
 struct MissionCreateRequest {
     user_id: String,
+    drone_id: String,
     target_lat: Decimal,
     target_lng: Decimal,
 }
@@ -110,6 +111,7 @@ async fn add_mission(
     let mission = MissionsActiveModel {
         mission_id: ActiveValue::set(xid::new().to_string()),
         user_id: ActiveValue::set(data.user_id),
+        drone_id: ActiveValue::set(data.drone_id),
         target_lat: ActiveValue::set(Some(data.target_lat)),
         target_lng: ActiveValue::set(Some(data.target_lng)),
         status: ActiveValue::set(Status::Idle),

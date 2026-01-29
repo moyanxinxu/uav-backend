@@ -2,7 +2,7 @@
 
 use super::sea_orm_active_enums::Role;
 use sea_orm::entity::prelude::*;
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "users")]
