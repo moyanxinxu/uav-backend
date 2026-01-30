@@ -15,7 +15,16 @@ use crate::entity::sea_orm_active_enums::Status;
 use crate::entity::missions;
 use crate::entity::missions::ActiveModel as MissionsActiveModel;
 use sea_orm::entity::prelude::*;
-use sea_orm::{ ActiveValue, IntoActiveModel };
+use sea_orm::{
+    ActiveModelTrait,
+    ActiveValue,
+    EntityTrait,
+    IntoActiveModel,
+    ModelTrait,
+    PaginatorTrait,
+    FromQueryResult,
+    QuerySelect,
+};
 
 // use Decimal;
 
@@ -158,6 +167,31 @@ async fn update_mission(
     }
 }
 
+#[derive(Debug, Serialize, FromQueryResult)]
+struct MissionStatusItem {
+    status: String,
+    count: i64,
+}
+
+#[derive(Debug, Serialize)]
+struct MissionStatusResponse {
+    categories: Vec<MissionStatusItem>,
+}
+
+async fn get_mission_status(State(
+    AppState { db },
+): State<AppState>) -> ApiResult<ApiResponse<MissionStatusResponse>> {
+    let result = Missions::find()
+        .select_only()
+        .column(missions::Column::Status)
+        .column_as(Expr::col(missions::Column::MissionId).count(), "count")
+        .group_by(missions::Column::Status)
+        .into_model::<MissionStatusItem>()
+        .all(&db).await?;
+
+    Ok(ApiResponse::ok("获取任务状态分布成功", Some(MissionStatusResponse { categories: result })))
+}
+
 pub fn create_mission_router() -> Router<AppState> {
     Router::new()
         .route("/", get(get_all_mission))
@@ -165,4 +199,5 @@ pub fn create_mission_router() -> Router<AppState> {
         .route("/{id}", get(get_mission))
         .route("/{id}", put(update_mission))
         .route("/{id}", delete(delete_mission))
+        .route("/status", get(get_mission_status))
 }

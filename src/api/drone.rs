@@ -10,8 +10,10 @@ use sea_orm::{
     ModelTrait,
     PaginatorTrait,
     QueryFilter,
+    FromQueryResult,
+    QuerySelect,
 };
-
+use sea_orm::prelude::Expr;
 use crate::app::AppState;
 use crate::common::response::ApiResponse;
 use crate::entity::drones::ActiveModel as DronesActiveModel;
@@ -20,7 +22,7 @@ use crate::entity::prelude::Drones;
 use crate::common::page::{ Page, PaginationParams };
 use crate::common::result::{ ApiError, ApiResult };
 use crate::entity::sea_orm_active_enums::Status;
-use serde::{ Deserialize };
+use serde::{ Deserialize, Serialize };
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -175,6 +177,31 @@ async fn delete_drone(
     }
 }
 
+#[derive(Debug, Serialize, FromQueryResult)]
+struct DroneStatusItem {
+    status: String,
+    count: i64,
+}
+
+#[derive(Debug, Serialize)]
+struct DroneStatusResponse {
+    categories: Vec<DroneStatusItem>,
+}
+
+async fn get_drone_status(State(
+    AppState { db },
+): State<AppState>) -> ApiResult<ApiResponse<DroneStatusResponse>> {
+    let result = Drones::find()
+        .select_only()
+        .column(drones::Column::Status)
+        .column_as(Expr::col(drones::Column::DroneId).count(), "count")
+        .group_by(drones::Column::Status)
+        .into_model::<DroneStatusItem>()
+        .all(&db).await?;
+
+    Ok(ApiResponse::ok("获取无人机状态分布成功", Some(DroneStatusResponse { categories: result })))
+}
+
 pub fn create_drone_router() -> Router<AppState> {
     Router::new()
         .route("/", get(get_all_drones))
@@ -183,4 +210,5 @@ pub fn create_drone_router() -> Router<AppState> {
         .route("/{id}", put(update_drone))
         .route("/{id}", delete(delete_drone))
         .route("/available", get(get_all_available_drones))
+        .route("/status", get(get_drone_status))
 }
