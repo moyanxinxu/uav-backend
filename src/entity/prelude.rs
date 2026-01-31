@@ -2,6 +2,7 @@
 
 pub use super::drones::Entity as Drones;
 pub use super::events::Entity as Events;
+pub use super::incidents::Entity as Incidents;
 pub use super::logs::Entity as Logs;
 pub use super::missions::Entity as Missions;
 pub use super::users::Entity as Users;

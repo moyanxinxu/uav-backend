@@ -97,3 +97,32 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_general_ci
 COMMENT='系统日志表';
+
+
+CREATE TABLE IF NOT EXISTS incidents (
+    incident_id VARCHAR(32) NOT NULL COMMENT '事故/事件ID',
+    title VARCHAR(100) NOT NULL COMMENT '事件标题',
+    description TEXT COMMENT '事件描述',
+
+    -- 位置（先用经纬度，和你现有体系一致）
+    lat DECIMAL(9,6) NOT NULL COMMENT '纬度',
+    lng DECIMAL(9,6) NOT NULL COMMENT '经度',
+
+    radius FLOAT DEFAULT 20 COMMENT '影响半径（米）',
+
+    severity TINYINT DEFAULT 1 COMMENT '严重程度 1-5',
+    status ENUM('open','processing','closed')
+        NOT NULL DEFAULT 'open' COMMENT '事件状态',
+
+    created_by VARCHAR(32) NOT NULL COMMENT '创建人',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (incident_id),
+    FOREIGN KEY (created_by) REFERENCES users(user_id)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci
+COMMENT='警情表';
